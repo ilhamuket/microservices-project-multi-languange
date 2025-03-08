@@ -1,0 +1,31 @@
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: always
+    ports:
+      - "9001:9000"
+    volumes:
+      - ./auth-service:/var/www/html
+    networks:
+      - microservices-network
+  
+  auth-nginx:
+    image: nginx:alpine
+    container_name: auth-nginx
+    restart: always
+    ports:
+      - "8101:80"
+    volumes:
+      - ./auth-service:/var/www/html
+      - ./auth-service/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - auth-service
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    external: true
