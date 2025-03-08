@@ -1,23 +1,22 @@
-FROM rust:1.75
+FROM rust:slim
 
 WORKDIR /app
 
-# Copy manifest files
-COPY Cargo.toml Cargo.lock* ./
+# Set environment variables
+ENV SQLX_OFFLINE=true
+ENV RUST_LOG=info
 
-# Create a dummy source file to build dependencies
-RUN mkdir -p src && echo 'fn main() { println!("Dummy!") }' > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
-
-# Copy actual source files
+# Copy source
 COPY . .
 
-# Build the application
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build application
 RUN cargo build --release
 
-# Expose port
-EXPOSE 8080
-
-# Run the binary
+# Run application
 CMD ["./target/release/student-service"]
