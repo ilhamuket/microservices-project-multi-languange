@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Services\EventPublisherService;
 
 class AuthController extends Controller
 {
@@ -28,6 +29,15 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        $eventPublisher = app(EventPublisherService::class);
+        $eventPublisher->publishUserEvent('registered', [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone_number' => $user->phone_number, // pastikan field ini ada atau sesuaikan
+            'created_at' => $user->created_at->format('Y-m-d H:i:s')
         ]);
 
         return response()->json([
